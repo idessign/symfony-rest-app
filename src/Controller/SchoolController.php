@@ -53,7 +53,7 @@ class SchoolController extends AbstractFOSRestController
 
 				// assign a value to the item and save it
 				// $countStudent->set(count($students));
-				$countStudent->set(1);
+				$countStudent->set(count($students));
 				$cache->save($countStudent);
 			}
 
