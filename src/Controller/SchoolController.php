@@ -40,12 +40,13 @@ class SchoolController extends AbstractFOSRestController
 		$counter = 0;
 
 		foreach ($schools as $school) {
+			$schoolId = $school['id'];
+
 			// create a new item by trying to get it from the cache
-			$countStudent = $cache->getItem('countStudent.' . $counter);
+			$countStudent = $cache->getItem('countStudent.' . $schoolId);
 
 			// Check cache data exists
 			if (!$countStudent->isHit() || $createCache == 'create') {
-				$schoolId = $school['id'];
 				$schoolStudents = $this->getDoctrine()
 					->getRepository(School::class)
 					->find($schoolId);
@@ -74,14 +75,42 @@ class SchoolController extends AbstractFOSRestController
 	 * @Rest\Get("/school/{id}")
 	 * @return Response
 	 */
-	public function show($id)
+	public function show($id, Request $request)
 	{
+		// Create cache
+		$createCache = $request->query->get('cache');
+
 		$repository = $this->getDoctrine()->getRepository(School::class);
-		$school = $repository->find($id);
+		$school = $repository->show($id);
 
 		if ($school === null) {
 			return $this->handleView($this->view(['status' => 'Result empty'], Response::HTTP_NOT_FOUND));
 		}
+
+		// Count students cache
+		$cache = new FilesystemAdapter();
+
+		// create a new item by trying to get it from the cache
+		$countStudent = $cache->getItem('countStudent.' . $id);
+
+		// Check cache data exists
+		if (!$countStudent->isHit() || $createCache == 'create') {
+			$schoolStudents = $this->getDoctrine()
+				->getRepository(School::class)
+				->find($id);
+			$students = $schoolStudents->getStudents();
+
+			// assign a value to the item and save it
+			// $countStudent->set(count($students));
+			$countStudent->set(count($students));
+			$cache->save($countStudent);
+		}
+
+		// retrieve the value stored by the item
+		$countStudent = $countStudent->get();
+
+		// Add countStudent value in array
+		$school[0]['studentCount'] = $countStudent;
 
 		return $this->handleView($this->view($school));
 	}

@@ -51,15 +51,14 @@ class SchoolRepository extends ServiceEntityRepository
 //        ;
     }
 
-    /*
-    public function findOneBySomeField($value): ?School
+    public function show($id)
     {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.exampleField = :val')
-            ->setParameter('val', $value)
+        return $this->createQueryBuilder('sc')
+			->select('sc.id, sc.name, sc.description')
+            ->andWhere('sc.id = :id')
+            ->setParameter('id', $id)
             ->getQuery()
-            ->getOneOrNullResult()
+            ->getResult()
         ;
     }
-    */
 }
