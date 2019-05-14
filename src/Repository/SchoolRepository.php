@@ -28,20 +28,27 @@ class SchoolRepository extends ServiceEntityRepository
     	$page = $page - 1;
     	$page = $page * $onPage;
 
-        return $this->createQueryBuilder('s')
-            // ->andWhere('s.id = :val')
-            // ->setParameter('val', $value)
-			->select('s.id, s.name, s.description, COUNT(st) as studentCount')
-			->leftJoin('s.students', 'st')
-            ->orderBy('s.id', 'ASC')
-			->addGroupBy('s.id')
+		return $this->createQueryBuilder('sc')
+			->select('sc.id, sc.name, sc.description')
+			->orderBy('sc.id', 'ASC')
 			->setFirstResult($page)
 			->setMaxResults($onPage)
-            ->getQuery()
-			->useQueryCache(true)
-			->useResultCache(true, 300)
-            ->getScalarResult()
-        ;
+			->getQuery()
+			->getResult()
+		;
+
+// 			// Test query with Join
+//			->select('s.id, s.name, s.description, COUNT(st) as studentCount')
+//			->leftJoin('s.students', 'st')
+//          ->orderBy('s.id', 'ASC')
+//			->addGroupBy('s.id')
+//			->setFirstResult($page)
+//			->setMaxResults($onPage)
+//          ->getQuery()
+//			->useQueryCache(true)
+//			->useResultCache(true, 300)
+//          ->getScalarResult()
+//        ;
     }
 
     /*

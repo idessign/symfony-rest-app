@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\School;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -17,13 +18,52 @@ class SchoolController extends AbstractFOSRestController
      */
     public function list(Request $request)
     {
+    	// Get page
 		$page = $request->query->get('page', 1);
 
+		// Create cache
+		$createCache = $request->query->get('cache');
+
+		// Get School
 		$repository = $this->getDoctrine()->getRepository(School::class);
 		$schools = $repository->selectList($page);
 
+		// Check result
 		if ($schools === null) {
 			return $this->handleView($this->view(['status' => 'Result empty'], Response::HTTP_NOT_FOUND));
+		}
+
+		// Count students cache
+		$cache = new FilesystemAdapter();
+
+		// Array item counter
+		$counter = 0;
+
+		foreach ($schools as $school) {
+			// create a new item by trying to get it from the cache
+			$countStudent = $cache->getItem('countStudent.' . $counter);
+
+			// Check cache data exists
+			if (!$countStudent->isHit() || $createCache == 'create') {
+				$schoolId = $school['id'];
+				$schoolStudents = $this->getDoctrine()
+					->getRepository(School::class)
+					->find($schoolId);
+				$students = $schoolStudents->getStudents();
+
+				// assign a value to the item and save it
+				// $countStudent->set(count($students));
+				$countStudent->set(1);
+				$cache->save($countStudent);
+			}
+
+			// retrieve the value stored by the item
+			$countStudent = $countStudent->get();
+
+			// Add countStudent value in array
+			$schools[$counter]['studentCount'] = $countStudent;
+
+			$counter++;
 		}
 
 		return $this->handleView($this->view($schools));
