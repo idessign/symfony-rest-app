@@ -10,7 +10,6 @@ GET /school/{id} - school_show - with school attributes + studentCount (need to 
 POST /school - school_new<br>
 PUT /school/{id} - school_update<br>
 DELETE /school/{id} - school_delete<br>
-
 GET /student - student_list<br>
 GET /student/{id} - student_show<br>
 POST /student - student_new<br>
