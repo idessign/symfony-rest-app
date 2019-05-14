@@ -37,14 +37,14 @@ class Student
 		return $this->name;
 	}
 
-	public function setName($name)
-	{
-		$this->name = $name;
-	}
-
 	public function getSchool()
 	{
 		return $this->school;
+	}
+
+	public function setName($name)
+	{
+		$this->name = $name;
 	}
 
 	public function setSchool($school)

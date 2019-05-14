@@ -28,10 +28,11 @@ class StudentRepository extends ServiceEntityRepository
 		$page = $page - 1;
 		$page = $page * $onPage;
 
-		return $this->createQueryBuilder('s')
+		return $this->createQueryBuilder('st')
 			// ->andWhere('s.id = :val')
 			// ->setParameter('val', $value)
-			->orderBy('s.id', 'ASC')
+			->select('st.id, st.name')
+			->orderBy('st.id', 'ASC')
 			->setFirstResult($page)
 			->setMaxResults($onPage)
 			->getQuery()
@@ -39,15 +40,14 @@ class StudentRepository extends ServiceEntityRepository
 			;
 	}
 
-    /*
-    public function findOneBySomeField($value): ?Student
-    {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
+	public function show($id)
+	{
+		return $this->createQueryBuilder('st')
+			->select('st.id, st.name')
+			->andWhere('st.id = :id')
+			->setParameter('id', $id)
+			->getQuery()
+			->getResult()
+			;
+	}
 }

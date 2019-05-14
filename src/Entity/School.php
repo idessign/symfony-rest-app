@@ -38,7 +38,7 @@ class School
 	 */
 	private $name;
 
-	public function getName(): text
+	public function getName()
 	{
 		return $this->name;
 	}
@@ -48,7 +48,7 @@ class School
 	 */
 	private $description;
 
-	public function getDescription(): text
+	public function getDescription()
 	{
 		return $this->description;
 	}

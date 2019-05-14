@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\School;
 use App\Entity\Student;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
@@ -32,7 +33,12 @@ class StudentController extends AbstractFOSRestController
 	public function show($id)
 	{
 		$repository = $this->getDoctrine()->getRepository(Student::class);
-		$student = $repository->find($id);
+		$student = $repository->show($id);
+
+		if (empty($student)) {
+			return $this->handleView($this->view(['status' => 'Student not found'], Response::HTTP_NOT_FOUND));
+		}
+
 		return $this->handleView($this->view($student));
 	}
 
@@ -43,18 +49,21 @@ class StudentController extends AbstractFOSRestController
 	 */
 	public function new(Request $request)
 	{
-		$data = new Student;
 		$name = $request->get('name');
-		$schoolId = $request->get('school_id');
+		$school = $request->get('school');
 
-		if(empty($name) || empty($schoolId)) {
+		if(empty($name) || empty($school)) {
 			return $this->handleView($this->view(['status' => 'Empty data are not allowed'], Response::HTTP_NOT_ACCEPTABLE));
 		}
 
-		$data->setName($name);
-		$data->setSchoolId($schoolId);
 		$em = $this->getDoctrine()->getManager();
-		$em->persist($data);
+		$school = $em->find(School::class, $school);
+
+		$student = new Student();
+		$student->setName($name);
+		$student->setSchool($school);
+
+		$em->merge($student);
 		$em->flush();
 
 		return $this->handleView($this->view(['status' => 'Student added'], Response::HTTP_CREATED));
@@ -68,16 +77,15 @@ class StudentController extends AbstractFOSRestController
 	public function update($id, Request $request)
 	{
 		$name = $request->get('name');
-		$schoolId = $request->get('school_id');
+		$school = $request->get('school');
 		$em = $this->getDoctrine()->getManager();
 		$student = $this->getDoctrine()->getRepository(Student::class)->find($id);
 
 		if (empty($student)) {
 			return $this->handleView($this->view(['status' => 'Student not found'], Response::HTTP_NOT_FOUND));
 		}
-		elseif(!empty($name) && !empty($schoolId)){
+		elseif (!empty($name) && !empty($school)){
 			$student->setName($name);
-			$student->setSchoolId($schoolId);
 			$em->flush();
 			return $this->handleView($this->view(['status' => 'Student data updated'], Response::HTTP_OK));
 		}
